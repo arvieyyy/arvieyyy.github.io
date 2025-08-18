@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You ❤️</title>
+    <style>
+        :root {
+            --primary-color: #ff4d6d;
+            --primary-dark: #e03e5b;
+            --background-color: #ffe6eb;
+            --text-color: #333;
+            --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            text-align: center;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        .hidden { 
+            display: none; 
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn:hover, .btn:focus {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .photo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        
+        .photo {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: var(--shadow);
+            animation: fadeIn 1.5s ease forwards;
+            opacity: 0;
+        }
+        
+        .caption {
+            font-size: 1.1rem;
+            margin: 0.5rem 0 1.5rem;
+            animation: fadeIn 1.5s ease forwards;
+            opacity: 0;
+            color: #555;
+        }
+        
+        .interactive-text {
+            cursor: pointer;
+            color: var(--primary-color);
+            text-decoration: underline;
+            margin: 1.5rem 0;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .interactive-text:hover {
+            transform: scale(1.05);
+        }
+        
+        h1, h2 {
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            max-width: 600px;
+            margin: 1rem auto;
+            text-align: center;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* Floating hearts */
+        .heart {
+            position: fixed;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            animation: float 6s linear infinite;
+            top: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+        
+        /* Accessibility focus styles */
+        button:focus, .interactive-text:focus {
+            outline: 2px solid var(--primary-dark);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Opening Screen -->
+<div id="startScreen" class="container">
+    <h1>For You, My Love ❤️</h1>
+    <p>I've prepared something special just for you...</p>
+    <button class="btn" onclick="startSurprise()">View Your Gift 💌</button>
+</div>
+
+<!-- Surprise Content -->
+<div id="surpriseContent" class="hidden container">
+    <div id="photoContainer" class="photo-container"></div>
+    <h2 id="finalMessage" class="hidden interactive-text" tabindex="0" onclick="showCouplePic()" onkeydown="handleKeyDown(event)">You're My Favorite Person in the World 💕 (Click or Tap Here)</h2>
+</div>
+
+<!-- Couple Pic Section -->
+<div id="coupleSection" class="hidden container">
+    <img id="couplePic" src="us.jpg" alt="Us Together" class="photo" style="opacity:1;">
+    <h2>Always Together ❤️</h2>
+    <p>
+        Happy Birthday, my love. 💖 You're the most wonderful part of my life, 
+        and your happiness means everything to me. While I may not have been 
+        there for every challenging moment in your past, I promise to stand by 
+        your side through all that comes our way. I believe in you completely—
+        pursue your dreams with confidence, make your family proud, and know 
+        that I'm already so proud to have you in my life. My love for you is 
+        beyond measure. ❤️
+    </p>
+</div>
+
+<!-- Background Music -->
+<audio id="bgMusic" loop>
+    <source src="taylor.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+    // Photo collection with captions
+    const photos = [
+        { src: "chai1.jpg", caption: "My sunshine ☀️" },
+        { src: "chai2.jpg", caption: "That beautiful smile 💖" },
+        { src: "chai3.jpg", caption: "Every moment with you is magical ✨" },
+        { src: "chai4.jpg", caption: "You're my sanctuary 🏡" },
+        { src: "chai.jpg", caption: "Forever & Always ❤️" }
+    ];
+    
+    let currentIndex = 0;
+    let musicPlayed = false;
+
+    function startSurprise() {
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('surpriseContent').classList.remove('hidden');
+
+        // Attempt to play background music (with user interaction)
+        if (!musicPlayed) {
+            const music = document.getElementById('bgMusic');
+            const playPromise = music.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay was prevented:", error);
+                    // Show a button to allow music playback
+                });
+            }
+            musicPlayed = true;
+        }
+
+        displayPhotosSequentially();
+        setInterval(createHeart, 800);
+    }
+
+    function displayPhotosSequentially() {
+        if (currentIndex < photos.length) {
+            const container = document.getElementById('photoContainer');
+            
+            // Create image element
+            const img = document.createElement('img');
+            img.src = photos[currentIndex].src;
+            img.alt = "Special moment";
+            img.className = "photo";
+            
+            // Create caption element
+            const caption = document.createElement('div');
+            caption.className = 'caption';
+            caption.textContent = photos[currentIndex].caption;
+
+            // Clear previous content and add new
+            container.innerHTML = '';
+            container.appendChild(img);
+            container.appendChild(caption);
+            
+            currentIndex++;
+            setTimeout(displayPhotosSequentially, 2500);
+        } else {
+            setTimeout(() => {
+                document.getElementById('finalMessage').classList.remove('hidden');
+                document.getElementById('finalMessage').focus();
+            }, 1000);
+        }
+    }
+
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = (Math.random() * 20 + 10) + "px";
+        heart.textContent = "❤️";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 6000);
+    }
+
+    function showCouplePic() {
+        document.getElementById('surpriseContent').style.display = 'none';
+        document.getElementById('coupleSection').classList.remove('hidden');
+        document.getElementById('couplePic').focus();
+    }
+    
+    function handleKeyDown(event) {
+        // Allow activation with Enter key for accessibility
+        if (event.key === 'Enter') {
+            showCouplePic();
+        }
+    }
+</script>
+
+</body>
+</html>
